@@ -26,3 +26,14 @@
 *.exe
 *.out
 *.app
+/Debug
+/ipch
+/AntUtils/stdafx.h
+/AntUtils/targetver.h
+/AntUtils/Debug
+/AntUtils/Release
+/AntUtils/AntUtils.vcxproj
+/AntUtils/AntUtils.vcxproj.filters
+/AntUtils.Test/AntUtils.Test.vcxproj.filters
+/AntUtils.Test/Debug
+/AntUtils.Test/AntUtils.Test.vcxproj

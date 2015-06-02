@@ -1,4 +1,4 @@
-
+#pragma once
 template<class T1, class T2>
 class Tuple_2{
 public:

@@ -3,7 +3,7 @@
 #include <functional>
 #include <stack>
 
-#include "Tuple.h"
+#include "Tuple.hpp"
 
 template<class T> class Array
 {
@@ -32,10 +32,18 @@ public:
 		this->_array[this->_array_count++] = item;
 	}
 
-	void ForEach(std::function<void(T)> func){
+	Array<T> ForEach(std::function<void(T)> func){
 		for (int i = 0; i < this->_array_count; i++){
 			func(this->_array[i]);
 		}
+		return *this;
+	}
+
+	Array<T> ForEach(std::function<void(int, T)> func, int start_position){
+		for(int i = start_position; i < this->_array_count; i++){
+			func(i, this->_array[i]);
+		}
+		return *this;
 	}
 
 	template<class D> Array<D> Map(std::function<D(T)> func){
@@ -46,11 +54,11 @@ public:
 		return mapArray;
 	}
 
-	bool Exists(std::function<bool(T)> func){
-		bool result = false;
+	Tuple_2<Array<T>, bool> Exists(std::function<bool(T)> func){
+		Tuple_2<bool, Array<T>> result(false, *this);
 		this->ForEach([&result, &func](T i){
-			if (result) return;
-			result = func(i);
+			if (result.Item1) return;
+			result.Item1 = func(i);
 		});
 		return result;
 	}
@@ -96,6 +104,14 @@ public:
 				pSt.push(nx);
 			}
 		} while (!pSt.empty());
+		return *this;
+	}
+
+	Array<T> Remove(int index){
+		this->ForEach([this](int p, T item){
+			_array[p - 1] = _array[p];
+		}, index + 1);
+		_array_count--;
 		return *this;
 	}
 
