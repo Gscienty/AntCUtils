@@ -3,22 +3,21 @@
 
 #include "stdafx.h"
 #include <iostream>
-#include "..\AntUtils\Array.h"
-
-using namespace std;
+#include "../AntUtils/Socket.hpp"
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Array<int> a(20);
-	for (int i = 0; i < 10; i++){
-		a.Push(i);
-	}
-	a.Find([](int i){ return i > 2; })
-		.Sort([](const int &a, const int &b){
-		return a > b;
-	}).ForEach([](int i){
-		cout << i;
+	using namespace std;
+	AnSocket::CreateSocket([](AnSocket sock){
+		//std::cout << "build server port 6655\n";
+		//sock.BuildStreamServer(6655, AF_INET).ServerListen(5, [](SOCKET sock, sockaddr_in addr){
+
+		//});
+
+		sock.BuildTcpClient(AF_INET, 6655, "127.0.0.1")
+			.ConnectServer().Send("Hello").CloseConnect();
 	});
-	getchar();
+	std::cout << "按任意键结束\n";
+	system("pause");
 	return 0;
 }

@@ -1,5 +1,3 @@
-#include "stdafx.h"
-#include "Array.h"
 
 template<class T> Array<T>::Array()
 	:_array_count(0),
