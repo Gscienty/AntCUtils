@@ -30,20 +30,20 @@ public://本地方法
 	//建立TCP服务器
 	AnSocket BuildStreamServer(u_short port, int type){
 		//初始化套接字
-		this->_sock = socket(type, SOCK_STREAM, 0);
+		this->_svrSock = socket(type, SOCK_STREAM, 0);
 		//初始化地址
 		memset(&this->_addrSvr, 0, sizeof(this->_addrSvr));
 		this->_addrSvr.sin_family = type;
 		this->_addrSvr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 		this->_addrSvr.sin_port = htons(port);
 		//绑定
-		bind(this->_sock, (SOCKADDR*)&this->_addrSvr, sizeof(SOCKADDR));
+		bind(this->_svrSock, (SOCKADDR*)&this->_addrSvr, sizeof(SOCKADDR));
 		return *this;
 	}
 
 	//建立TCP客户端
 	AnSocket BuildTcpClient(int type, int svrPort, std::string ip){
-		this->_sock = socket(type, SOCK_STREAM, IPPROTO_TCP);
+		this->_svrSock = socket(type, SOCK_STREAM, IPPROTO_TCP);
 		memset(&this->_addrSvr, 0, sizeof(this->_addrSvr));
 		this->_addrSvr.sin_family = type;
 		this->_addrSvr.sin_port = htons(svrPort);
@@ -53,11 +53,11 @@ public://本地方法
 
 	//服务器监听
 	AnSocket ServerListen(int waiting, std::function<void(SOCKET, sockaddr_in)> func){
-		if (listen(this->_sock, waiting) < 0) return *this;
+		if (listen(this->_svrSock, waiting) < 0) return *this;
 		int len = sizeof(SOCKADDR);
 		sockaddr_in addrClet;
 		while (this->_svrSwitch){
-			SOCKET sockConn = accept(this->_sock, (SOCKADDR*)&addrClet, &len);
+			SOCKET sockConn = accept(this->_svrSock, (SOCKADDR*)&addrClet, &len);
 			int error = GetLastError();
 			func(sockConn, addrClet);
 			closesocket(sockConn);
@@ -66,22 +66,28 @@ public://本地方法
 	}
 
 	AnSocket ConnectServer(){
-		if (connect(this->_sock, (sockaddr*)&this->_addrSvr, sizeof(this->_addrSvr)) == SOCKET_ERROR){
+		if (connect(this->_svrSock, (sockaddr*)&this->_addrSvr, sizeof(this->_addrSvr)) == SOCKET_ERROR){
 			int ret = GetLastError();
 			return this->CloseConnect();
 		}
 		return *this;
 	}
 
-	AnSocket Send(std::string msg){
-		if (send(this->_sock, msg.c_str(), msg.length(), 0) == SOCKET_ERROR){
+	AnSocket SendToServer(const char* buf, int length){
+		if (send(this->_svrSock, buf, length, 0) == SOCKET_ERROR){
 			return this->CloseConnect();
 		}
 		return *this;
 	}
 
+	AnSocket RecvServerMessage(char* buf, int length, std::function<void(const char*, int)> func){
+		recv(this->_svrSock, buf, length, 0);
+		func(buf, length);
+		return *this;
+	}
+
 	AnSocket CloseConnect(){
-		closesocket(this->_sock);
+		closesocket(this->_svrSock);
 		return *this;
 	}
 
@@ -97,5 +103,5 @@ private://私有字段
 	bool _svrSwitch;
 	std::string _selfString;
 	sockaddr_in _addrSvr;
-	SOCKET _sock;
+	SOCKET _svrSock;
 };
